@@ -4,5 +4,6 @@ from shops import views
 
 
 urlpatterns = [
-    path('', views.HomeView.as_view()),
+    path('search/<str:category>/<str:name>', views.SearchView.as_view()),
+    path('currencies', views.CurrenciesView.as_view()),
 ]
