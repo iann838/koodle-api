@@ -1,0 +1,22 @@
+
+CATEGORIES = {
+    "all",
+    "arts",
+    "automotive",
+    "baby",
+    "beauty",
+    "books",
+    "boys",
+    "computers",
+    "electronics",
+    "girls",
+    "health",
+    "kitchen",
+    "industrial",
+    "mens",
+    "pets",
+    "sports",
+    "games",
+    "travel",
+    "womens",
+}

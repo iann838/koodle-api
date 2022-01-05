@@ -31,6 +31,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'corsheaders',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -41,6 +42,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -124,3 +126,26 @@ STATIC_URL = '/static/'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# CORS Settings
+# https://pypi.org/project/django-cors-headers/
+
+if DEBUG:
+    CORS_ORIGIN_WHITELIST = ["http://127.0.0.1:8080", "http://127.0.0.1:8000"]
+    CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1:8080", "http://127.0.0.1:8000"]
+else:
+    CORS_ORIGIN_WHITELIST = ["https://koodle.paaksing.com", "https://api.koodle.paaksing.com"]
+    CSRF_TRUSTED_ORIGINS = ["https://koodle.paaksing.com", "https://api.koodle.paaksing.com"]
+
+CORS_ALLOW_CREDENTIALS = True
+
+
+# Cookies Settings
+# https://docs.djangoproject.com/en/3.1/ref/settings/
+
+SESSION_COOKIE_HTTPONLY = True
+
+if not DEBUG: # IF NOT DEBUG ALLOW COOKIE ONLY HTTPS
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    CSRF_COOKIE_DOMAIN = ".paaksing.com"
