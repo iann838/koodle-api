@@ -94,7 +94,7 @@ class EbayScraper(BaseScraper):
             if price_range:
                 product['price_range'] = price_range
                 product['price'] = price_range[0]
-            else:
+            elif price:
                 try:
                     product['price'] = float(price)
                 except ValueError:
