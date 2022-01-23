@@ -30,7 +30,7 @@ SECRET_KEY = CONFIG.get("SECRET_KEY")
 if DEBUG:
     ALLOWED_HOSTS = ['127.0.0.1']
 else:
-    ALLOWED_HOSTS = ['api.koodle.paaksing.com']
+    ALLOWED_HOSTS = ['api-koodle.paaksing.com']
 
 
 # Application definition
