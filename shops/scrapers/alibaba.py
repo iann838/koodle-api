@@ -2,15 +2,21 @@ import asyncio
 from bs4 import BeautifulSoup
 import aiohttp
 
+from ..utils.cache import SimpleCache
 from .base import BaseScraper
 
 
 class AlibabaScraper(BaseScraper):
 
     BASE_URL = "https://www.alibaba.com"
+    CACHE = SimpleCache()
 
     @classmethod
     async def search(cls, name: str, category: str):
+        try:
+            return cls.CACHE.get(name)
+        except KeyError:
+            pass
         url = cls.BASE_URL + "/trade/search?fsb=y&IndexArea=product_en&CatId=&SearchText=" + name
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36"
@@ -61,4 +67,6 @@ class AlibabaScraper(BaseScraper):
         
         if not product_list:
             print("Alibaba did not return any products")
+        if len(product_list) >= 5:
+            cls.CACHE.set(name, product_list)
         return product_list

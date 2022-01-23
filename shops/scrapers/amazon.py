@@ -4,6 +4,7 @@ from collections import defaultdict
 from bs4 import BeautifulSoup
 import aiohttp
 
+from ..utils.cache import SimpleCache
 from .base import BaseScraper
 
 
@@ -31,12 +32,17 @@ class AmazonScraper(BaseScraper):
         "womens": "fashion-womens",
     }
     BASE_URL = "https://www.amazon.com"
+    CACHE = SimpleCache()
 
     cookies = defaultdict(str)
     last_updated = datetime.now()
 
     @classmethod
     async def search(cls, name: str, category: str):
+        try:
+            return cls.CACHE.get(f"{category}__{name}")
+        except KeyError:
+            pass
         url = f"/s?k={name}"
         url += f"&i={cls.NORMALIZED_CATEGORIES[category]}"
         url += "&ref=nb_sb_noss&url=search-alias%3Daps"
@@ -151,4 +157,6 @@ class AmazonScraper(BaseScraper):
                     cls.last_updated = datetime.now()
         else:
             print("Amazon did not return any products")
+        if len(results) >= 5:
+            cls.CACHE.set(f"{category}__{name}", results)
         return results
