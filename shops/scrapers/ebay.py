@@ -2,6 +2,7 @@ from bs4 import BeautifulSoup
 import aiohttp
 import asyncio
 
+from ..utils.cache import SimpleCache
 from .base import BaseScraper
 
 
@@ -29,9 +30,14 @@ class EbayScraper(BaseScraper):
         "womens": "15724",
     }
     BASE_URL = "https://www.ebay.com"
+    CACHE = SimpleCache()
 
     @classmethod
     async def search(cls, name: str, category: str):
+        try:
+            return cls.CACHE.get(f"{category}__{name}")
+        except KeyError:
+            pass
         url = cls.BASE_URL + f"/sch/i.html?_from=R40&_nkw={name}&_sacat={cls.NORMALIZED_CATEGORIES[category]}&_fcid=1"
         headers = {
             ":authority": "www.ebay.com",
@@ -64,7 +70,7 @@ class EbayScraper(BaseScraper):
         product_list = []
 
         for featured_index, each_product in enumerate(product_data):
-            price = (each_product.findNext('span', attrs={'class': 's-item__price'}).text or "").replace("$", "").replace("USD", "").replace(",", "")
+            price = (each_product.findNext('span', attrs={'class': 's-item__price'}).text or "").replace("$", "").replace("USD", "").replace(",", "").replace(u"\xa0", "")
             price_range = None
             if " to " in price:
                 price_range = [float(pric) for pric in price.split(" to ")]
@@ -101,4 +107,6 @@ class EbayScraper(BaseScraper):
 
         if not product_list:
             print("Ebay did not return any products")
+        if len(product_list) >= 5:
+            cls.CACHE.set(name, product_list)
         return product_list
