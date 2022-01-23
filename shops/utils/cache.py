@@ -14,7 +14,7 @@ class SimpleCache(Generic[T]):
     objects: dict
     max_entries: int
 
-    def __init__(self, expiration=60, max_entries=5000, class_of_t: Optional[Type[T]] = None):
+    def __init__(self, expiration=60*60*3, max_entries=5000, class_of_t: Optional[Type[T]] = None):
         self.objects = {}
         self.expiration = expiration
         self.max_entries = max_entries
