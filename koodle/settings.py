@@ -27,7 +27,10 @@ else:
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = CONFIG.get("SECRET_KEY")
 
-ALLOWED_HOSTS = []
+if DEBUG:
+    ALLOWED_HOSTS = ['127.0.0.1']
+else:
+    ALLOWED_HOSTS = ['api.koodle.paaksing.com']
 
 
 # Application definition
