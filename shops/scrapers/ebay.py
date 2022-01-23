@@ -71,8 +71,12 @@ class EbayScraper(BaseScraper):
 
         for featured_index, each_product in enumerate(product_data):
             price = (each_product.findNext('span', attrs={'class': 's-item__price'}).text or "").replace("$", "").replace("USD", "").replace(",", "").replace(u"\xa0", "")
+            if "price" in price.lower() or "precio" in price.lower():
+                price = None
             price_range = None
-            if " to " in price:
+            if price is None:
+                pass
+            elif " to " in price:
                 price_range = [float(pric) for pric in price.split(" to ")]
             elif " a " in price:
                 price_range = [float(pric) for pric in price.split(" a ")]
