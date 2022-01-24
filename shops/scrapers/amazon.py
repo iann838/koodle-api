@@ -53,14 +53,14 @@ class AmazonScraper(BaseScraper):
                 cls.BASE_URL + url,
                 headers={
                     ":authority": "www.amazon.com",
+                    ":method": "GET",
+                    ":path": url,
+                    ":scheme": "https",
                     "accept": 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
                     "accept-encoding": "gzip, deflate, br",
                     "accept-language": "en",
                     "cache-control": "no-cache",
-                    "ect": "4g",
-                    "downlink": "9",
                     "pragma": "no-cache",
-                    "rtt": "150",
                     "sec-ch-ua": '"Google Chrome";v="95", "Chromium";v="95", ";Not A Brand";v="99"',
                     "sec-ch-ua-mobile": '?0',
                     "sec-ch-ua-platform": '"Windows"',
@@ -109,57 +109,49 @@ class AmazonScraper(BaseScraper):
             featured_index += 1
             results.append(o)
 
-        if results:
-            for cookie in session.cookie_jar:
-                cls.cookies[cookie.key] = cookie.value
-                print('Updated Amazon Cookie:', cookie.key, cookie.value)
-            if not cls.cookies['session-token']:
-                token_session_headers = {
-                    ":authority": "www.amazon.com",
-                    "accept": '*/*',
-                    "accept-encoding": "gzip, deflate, br",
-                    "accept-language": "en",
-                    "content-type": "application/x-www-form-urlencoded",
-                    "cache-control": "max-age=0",
-                    "downlink": "3.55",
-                    "ect": "4g",
-                    "origin": "https://www.amazon.com",
-                    "referer": "https://www.amazon.com/",
-                    "sec-ch-ua": '"Google Chrome";v="95", "Chromium";v="95", ";Not A Brand";v="99"',
-                    "sec-ch-ua-mobile": '?0',
-                    "sec-ch-ua-platform": '"Windows"',
-                    "sec-fetch-dest": 'empty',
-                    "sec-fetch-mode": 'cors',
-                    "sec-fetch-site": 'same-origin',
-                    "sec-fetch-user": '?1',
-                    "upgrade-insecure-requests": '1',
-                    "user-agent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.54 Safari/537.36',
-                    "x-requested-with": "XMLHttpRequest",
-                }
-                async with aiohttp.ClientSession() as token_session:
-                    r = await token_session.post(
-                        cls.BASE_URL + "/gp/product/sessionCacheUpdateHandler.html",
-                        headers=token_session_headers,
-                        cookies=cls.cookies
-                    )
-                    html = await r.text()
-                    # print(r)
-                    for cookie in token_session.cookie_jar:
-                        cls.cookies[cookie.key] = cookie.value
-                        print('Updated Amazon Cookie:', cookie.key, cookie.value)
-                    cls.last_updated = datetime.now()
-                    r = await token_session.post(
-                        cls.BASE_URL + "/gp/product/sessionCacheUpdateHandler.html",
-                        headers=token_session_headers,
-                        cookies=cls.cookies
-                    )
-                    html = await r.text()
-                    # print(r)
-                    for cookie in token_session.cookie_jar:
-                        cls.cookies[cookie.key] = cookie.value
-                        print('Updated Amazon Cookie:', cookie.key, cookie.value)
-                    cls.last_updated = datetime.now()
-        else:
+        for cookie in session.cookie_jar:
+            cls.cookies[cookie.key] = cookie.value
+            print('Updated Amazon Cookie:', cookie.key, cookie.value)
+        if not cls.cookies['session-token']:
+            ad_url = "/af/feedback-link?ie=UTF-8&pl=%7B%22adPlacementMetaData%22%3A%7B%22feedbackType%22%3A%22loomSearch%22%2C%22pageType%22%3A%22Search%22%2C%22slotName%22%3A%22auto-left-advertising-2%22%7D%2C%22adCreativeMetaData%22%3A%7B%22adCreativeId%22%3A%22undefined%22%2C%22adCreativeTemplateName%22%3A%22unknown%22%2C%22adId%22%3A%22undefined%22%2C%22adImpressionId%22%3A%22%22%2C%22adProgramId%22%3A%22undefined%22%2C%22adNetwork%22%3A%22cs%22%7D%7D"
+            token_session_headers = {
+                ":authority": "www.amazon.com",
+                ":method": "GET",
+                ":path": ad_url,
+                ":scheme": "https",
+                "accept": '*/*',
+                "accept-encoding": "gzip, deflate, br",
+                "accept-language": "en",
+                "content-type": "application/x-www-form-urlencoded",
+                "cache-control": "max-age=0",
+                "downlink": "3.55",
+                "ect": "4g",
+                "origin": "https://www.amazon.com",
+                "referer": "https://www.amazon.com/",
+                "sec-ch-ua": '"Google Chrome";v="95", "Chromium";v="95", ";Not A Brand";v="99"',
+                "sec-ch-ua-mobile": '?0',
+                "sec-ch-ua-platform": '"Windows"',
+                "sec-fetch-dest": 'none',
+                "sec-fetch-mode": 'cors',
+                "sec-fetch-site": 'same-origin',
+                "sec-fetch-user": '?1',
+                "upgrade-insecure-requests": '1',
+                "user-agent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.54 Safari/537.36',
+                "x-requested-with": "XMLHttpRequest",
+            }
+            async with aiohttp.ClientSession() as token_session:
+                r = await token_session.post(
+                    cls.BASE_URL + ad_url,
+                    headers=token_session_headers,
+                    cookies=cls.cookies
+                )
+                html = await r.text()
+                # print(r)
+                for cookie in token_session.cookie_jar:
+                    cls.cookies[cookie.key] = cookie.value
+                    print('Updated Amazon Cookie:', cookie.key, cookie.value)
+                cls.last_updated = datetime.now()
+        if not results:
             print("Amazon did not return any products")
         if len(results) >= 5:
             cls.CACHE.set(f"{category}__{name}", results)
