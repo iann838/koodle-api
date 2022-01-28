@@ -9,6 +9,7 @@ import requests
 from .scrapers.amazon import AmazonScraper
 from .scrapers.alibaba import AlibabaScraper
 from .scrapers.ebay import EbayScraper
+from .metrics import MetricManager
 from .constants import CATEGORIES
 
 
@@ -21,6 +22,7 @@ class CurrenciesView(View):
             rates_req = requests.get("http://www.convertmymoney.com/rates.json")
         if rates_req.status_code != 200:
             return JsonResponse({})
+        MetricManager.visits()
         return JsonResponse(rates_req.json()["rates"])
 
 
@@ -33,7 +35,10 @@ class SearchView(View):
         # Register category here -
         product_lists = self.get_product_lists(name=name, category=category)
         for product_list in product_lists:
-            products.extend(product_list)
+            for product in product_list:
+                product['request'] = {"category": category, "name": name}
+                products.append(product)
+        MetricManager.search(name, category)
         return JsonResponse(products, safe=False)
 
     @async_to_sync
@@ -48,3 +53,10 @@ class SearchView(View):
             if sum([len(result) for result in results]):
                 return results
         return results
+
+
+class ClickMetricView(View):
+
+    def get(self, request: HttpRequest, category: str, name: str):
+        MetricManager.clicks(name, category)
+        return JsonResponse({})
